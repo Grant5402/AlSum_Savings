@@ -1,0 +1,121 @@
+#include "MainFrame.h"
+
+wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+EVT_CHOICE(1001, MainFrame::onEnvelopeSelection) // Event for envelope dropdown selection
+wxEND_EVENT_TABLE()
+
+MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
+    // Main panel
+    wxPanel* panel = new wxPanel(this);
+
+    // ---- TOP MENU BAR ----
+    wxMenuBar* menuBar = new wxMenuBar();
+    wxMenu* fileMenu = new wxMenu();
+    fileMenu->Append(wxID_EXIT, "Exit");
+    menuBar->Append(fileMenu, "File");
+    menuBar->Append(new wxMenu(), "Menu");
+    SetMenuBar(menuBar);
+
+    // ---- DEFINE FONTS ----
+    wxFont headingFont(wxFontInfo(18).Bold());          // Heading font (size 12, bold)
+    wxFont subheadingFont(wxFontInfo(12).Bold());       // Subheading font (size 10, bold)
+    wxFont bodyFont(wxFontInfo(10));                     // Normal body font (size 9)
+
+    // ---- MAIN LAYOUT ----
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // ---- LEFT NAVIGATION ----
+    wxBoxSizer* leftSizer = new wxBoxSizer(wxVERTICAL);
+    wxStaticText* navLabel = new wxStaticText(panel, wxID_ANY, "Navigation:\nEnvelops\nTransactions");
+    navLabel->SetFont(subheadingFont);
+    leftSizer->Add(navLabel, 0, wxALL, 10);
+
+    // ---- RIGHT CONTENT ----
+    wxBoxSizer* rightSizer = new wxBoxSizer(wxVERTICAL);
+
+    // Envelope dynamic data
+    std::string envelopeName = "Groceries";
+    double goalAmount = 7000;
+    double currentAmount = 350.0;
+
+    wxStaticBoxSizer* envelopeSizer = new wxStaticBoxSizer(wxVERTICAL, panel, "Envelope");
+
+    // Envelope Name
+    wxStaticText* nameLabel = new wxStaticText(panel, wxID_ANY, "Envelope Name: " + envelopeName);
+    nameLabel->SetFont(headingFont);
+    envelopeSizer->Add(nameLabel, 0, wxALL, 5);
+
+    // Goal Amount
+    wxString goalText = wxString::Format("Goal Amount: $%.2f", goalAmount);
+    wxStaticText* goalLabel = new wxStaticText(panel, wxID_ANY, goalText);
+    goalLabel->SetFont(subheadingFont);
+    envelopeSizer->Add(goalLabel, 0, wxALL, 5);
+
+    // Current Amount 
+    wxString currentText = wxString::Format("Current Amount: $%.2f", currentAmount);
+    wxStaticText* currentLabel = new wxStaticText(panel, wxID_ANY, currentText);
+    currentLabel->SetFont(subheadingFont);
+    envelopeSizer->Add(currentLabel, 0, wxALL, 5);
+
+    // Progress Gauge
+    int progress = static_cast<int>((currentAmount / goalAmount) * 100);
+    wxGauge* progressGauge = new wxGauge(panel, wxID_ANY, 100, wxDefaultPosition, wxSize(300, 20));
+    progressGauge->SetValue(progress);
+
+    envelopeSizer->Add(progressGauge, 0, wxEXPAND | wxALL, 5);
+
+    // TRANSACTION TABLE
+    wxGrid* grid = new wxGrid(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    grid->CreateGrid(4, 5); // 4 rows, 5 columns 
+    grid->SetColLabelValue(0, "Description");
+    grid->SetColLabelValue(1, "Source");
+    grid->SetColLabelValue(2, "Envelope");
+    grid->SetColLabelValue(3, "Type");
+    grid->SetColLabelValue(4, "Amount");
+    grid->SetDefaultCellFont(bodyFont);
+
+    // Add to right panel with wxEXPAND flag
+    rightSizer->Add(envelopeSizer, 0, wxEXPAND | wxALL, 10);
+    rightSizer->Add(grid, 1, wxEXPAND | wxALL, 10);
+
+    // ---- STATUS BAR ----
+    CreateStatusBar();
+    SetStatusText("Status Text here");
+
+    // Combine Layouts
+    mainSizer->Add(leftSizer, 0, wxEXPAND | wxALL, 10);
+    mainSizer->Add(rightSizer, 1, wxEXPAND | wxALL, 10); // Make right side fill remaining space
+    panel->SetSizer(mainSizer);
+}
+
+void MainFrame::OnKeyEvent(wxKeyEvent& evt) {
+    wxChar keyChar = evt.GetUnicodeKey();
+
+    if (keyChar == WXK_NONE) {
+        int keyCode = evt.GetKeyCode();
+        wxLogStatus("Key Event %d", keyCode);
+    }
+    else {
+        wxLogStatus("Key Event %c", keyChar);
+    }
+}
+
+void MainFrame::UpdateFontSizes(wxWindow* parent, int maxFontSize) {
+    int width, height;
+    parent->GetSize(&width, &height);
+
+    // Calculate font sizes based on window width
+    int nameFontSize = std::min(maxFontSize, std::max(10, width / 30));
+    int amountFontSize = std::min(maxFontSize - 2, std::max(8, width / 40));
+
+    // Set fonts
+    wxFont nameFont(wxFontInfo(nameFontSize).Bold());
+    wxFont amountFont(wxFontInfo(amountFontSize));
+
+    //nameLabel->SetFont(nameFont);
+    //goalLabel->SetFont(amountFont);
+    //currentLabel->SetFont(amountFont);
+
+    // Refresh layout
+    parent->Layout();
+}
