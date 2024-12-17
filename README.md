@@ -29,6 +29,41 @@ This project was developed as part of an independent study course **CMSC 391**, 
   - Safe operations for adding, editing, and removing data.
 
 ---
+## **High Level & Simplified UML Diagrams**
+                     +---------------------------------------------------------------------+
+                     |                           BudgetManager                             |
+                     +---------------------------------------------------------------------+
+                     | - transactionCounter:int                                            |
+                     | - envelopes:unordered_map<string, Envelope>                         |
+                     | - transactions:unordered_map<int, Transaction>                      |
+                     |                                                                     |
+                     +---------------------------------------------------------------------+
+                     | + addEnvelope(name: string, balance: double, goal: double): void    |
+                     | + removeEnvelope(name: string): void                                |
+                     | + addTransaction(description: string, type: TransactionType,        |
+                     |   amount: double, envelope: string, date: string): void             |
+                     | + getTransactionsForEnvelope(envelope: string): vector<Transaction> |
+                     | + saveTransactions(filename: string): void                          |
+                     | + loadTransactions(filename: string): void                          |
+                     +---------------------------------------------------------------------+
+                                                          |      
+                  ------------------------------------------------------------------------------
+                 |                                                                              |
+    +------------------------------------+                                    +------------------------------------------+
+    |              Envelope              |                                    |                Transaction               |
+    +------------------------------------+                                    +------------------------------------------+
+    | - idName: string                   |                                    | - ID: int                                |
+    | - displayName: string              |                                    | - description: string                    |
+    | - balance: double                  |                                    | - type: TransactionType                  |
+    | - goal: double                     |                                    | - amount: double                         |
+    +------------------------------------+                                    | - envelope: string                       |
+    | + addFunds(amount: double): void   |                                    | - date: time_point                       |
+    | + deductFunds(amount: double): bool|                                    | - source: string                         |
+    | + getBalance(): double             |                                    +------------------------------------------+
+    | + inDebt(): bool                   |                                    | + getEnvelope(): string                  |
+    +------------------------------------+                                    | + getAmount(): double                    |
+                                                                              +------------------------------------------+
+---
 
 ## **System Requirements**
 To run the project, ensure you have the following dependencies installed:
