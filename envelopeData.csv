@@ -1,6 +1,7 @@
-,Groceries,175,250
-,Gas,100,150
-,Rent,800,995
-,Fun,0,100
-,Out To Eat,25,50
-,New Other,100,150
+groceries,Groceries,175,250
+rent,Rent,800,995
+gas,Gas,100,150
+out to eat,Out To Eat,25,50
+fun,Fun,0,100
+new other,New Other,100,150
+clothes,Clothes,30,75

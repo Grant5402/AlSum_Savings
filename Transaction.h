@@ -4,47 +4,52 @@
 #include <sstream>
 #include <iomanip>
 
+// Enum representing the type of transaction: Expense, Income, or None
 enum TransactionType {
-    EXPENSE,
-    INCOME,
-    NONE
+    EXPENSE,  // Deducts funds
+    INCOME,   // Adds funds
+    NONE      // Default or uninitialized type
 };
 
+// Class representing a single transaction in the budget system
 class Transaction
 {
 public:
-    // Constructor
+    // Default constructor: initializes a blank transaction
     Transaction();
 
-    Transaction(int id, const std::string& desc, TransactionType t, double amt, const std::string& env, 
+    // Constructor with essential transaction details (no source field)
+    Transaction(int id, const std::string& desc, TransactionType t, double amt, const std::string& env,
         const std::chrono::system_clock::time_point& date);
 
-    Transaction(int id, const std::string& desc, TransactionType t, double amt, const std::string& env, 
-        const std::chrono::system_clock::time_point& date,std::string source);
+    // Constructor with all transaction details including source
+    Transaction(int id, const std::string& desc, TransactionType t, double amt, const std::string& env,
+        const std::chrono::system_clock::time_point& date, std::string source);
 
     // Getters
-    int getId() const;
-    std::string getDescription() const;
-    std::string getEnvelope() const;
-    TransactionType getType() const;
-    double getAmount() const;
-    std::string getSource() const;
-    std::chrono::system_clock::time_point getDate() const;
+    int getId() const;                       // Returns the transaction ID
+    std::string getDescription() const;      // Returns the transaction description
+    std::string getEnvelope() const;         // Returns the associated envelope name
+    TransactionType getType() const;         // Returns the transaction type
+    double getAmount() const;                // Returns the transaction amount
+    std::string getSource() const;           // Returns the source of the transaction
+    std::chrono::system_clock::time_point getDate() const; // Returns the transaction date
 
-    std::string getDateAsString() const; // For CSV saving
-    void setDateFromString(const std::string& dateStr); // For CSV loading
+    std::string getDateAsString() const;     // Returns the date as a formatted string (e.g., "YYYY-MM-DD")
+    void setDateFromString(const std::string& dateStr); // Parses and sets the date from a string
+
+    // Static helper to parse a date string into a time_point
     static std::chrono::system_clock::time_point parseDate(const std::string& dateStr);
 
 private:
-    int ID;                   // ID for tracking transaction
-    std::string description;  // Description of the transaction (e.g., "Grocery Shopping")
-    std::string source;       // Source of depost or withdraw (e.g., I got gass from caseys so I would list caseys) 
-                              //    The goal is posisbly add panel for money spent at orgization break down
-    std::string envelope;     // Envelope associated with the transaction
-    TransactionType type;     // Type of transaction: expense, income, or ??
-    double amount;            // Amount of the transaction
-    std::chrono::system_clock::time_point date;
+    int ID;                       // Unique identifier for the transaction
+    std::string description;      // Description of the transaction (e.g., "Grocery Shopping")
+    std::string source;           // Source of transaction (e.g., store name, employer)
+    std::string envelope;         // Associated envelope name
+    TransactionType type;         // Type of transaction: Expense, Income, or None
+    double amount;                // Amount of the transaction
+    std::chrono::system_clock::time_point date; // Date of the transaction
 
+    // Helper function to format a time_point as a string
     std::string formatDate(const std::chrono::system_clock::time_point& tp) const;
 };
-

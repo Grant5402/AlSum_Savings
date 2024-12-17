@@ -3,33 +3,32 @@
 #include <algorithm>
 #include <cctype>
 
+// Class representing an individual "envelope" for budgeting
 class Envelope
 {
 public:
-	Envelope();
+    // Constructors
+    Envelope();
+    Envelope(const std::string& name, double starting_balance, double starting_goal);
 
-	Envelope(const std::string& name, double starting_balance, double starting_goal);
+    // Accessor methods (getters)
+    std::string getIDName() const;        // Returns the internal lowercase ID name
+    std::string getDisplayName() const;   // Returns the display name
+    double getBalance() const;            // Returns the current balance
+    double getGoal() const;               // Returns the goal amount
 
-	std::string getIDName() const;
-
-	std::string getDisplayName() const;
-
-	double getBalance() const;
-
-	double getGoal() const;
-
-	bool inDebt();
-
-	void addFunds(double amount);
-
-	bool deductFunds(double amount);
+    // Utility methods
+    bool inDebt();                        // Checks if the envelope is in debt
+    void addFunds(double amount);         // Adds funds to the envelope
+    bool deductFunds(double amount);      // Deducts funds and returns if balance is non-negative
 
 private:
-	std::string idName;
-	std::string displayName;
-	double balance;
-	double goal;
+    // Member variables
+    std::string idName;      // Internal lowercase ID name
+    std::string displayName; // Display name
+    double balance;          // Current balance
+    double goal;             // Goal amount
 
-	std::string toLowerCase(const std::string& input);
+    // Helper method to convert a string to lowercase
+    std::string toLowerCase(const std::string& input);
 };
-
