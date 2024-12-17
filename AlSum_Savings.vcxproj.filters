@@ -33,6 +33,9 @@
     <ClInclude Include="BudgetItemDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TransactionDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainFrame.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BudgetItemDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TransactionDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

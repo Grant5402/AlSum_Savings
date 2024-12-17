@@ -1,7 +1,7 @@
 #include "BudgetItemDialog.h"
 
 BudgetItemDialog::BudgetItemDialog(wxWindow* parent)
-    : wxDialog(parent, wxID_ANY, "Add Budget Item", wxDefaultPosition, wxSize(300, 200))
+    : wxDialog(parent, wxID_ANY, "Add Envelope", wxDefaultPosition, wxSize(300, 200))
 {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 

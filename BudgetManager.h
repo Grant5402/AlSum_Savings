@@ -7,6 +7,9 @@
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
 
 #include <windows.h>
 
@@ -28,7 +31,7 @@ public:
 
 	void removeEnvelope(const std::string& name);
 
-	Envelope getEnvelope(const std::string& name);
+	Envelope& getEnvelope(const std::string& name);
 
 	std::unordered_map<std::string, Envelope> getAllEnvelopes();
 
@@ -42,12 +45,16 @@ public:
 	// +--------------------------------------------------------------------+
 
 	void addTransaction(const std::string& desc, TransactionType t, double amt,
-		const std::string& env, const std::chrono::system_clock::time_point& date);
+		const std::string& env, const std::string& date);
 
 	void addTransaction(const std::string& desc, TransactionType t, double amt,
-		const std::string& env, const std::chrono::system_clock::time_point& date, std::string source);
+		const std::string& env, const std::string& date, std::string source);
 
 	std::vector<Transaction> getTransactionsForEnvelope(std::string env);
+
+	void removeTransaction(int transactionId);
+
+	void removeTransactionsForEnvelope(const std::string& envelopeName);
 
 	void transferTransaction(int id, std::string& env);
 
@@ -55,10 +62,13 @@ public:
 
 	void loadTransactions(const std::string& filename);
 
+	void DebugPrint(const std::string& message);
+
 
 private:
 	int transactionCounter = 0; // ID counter
 	std::string filename;
+
 
 	std::unordered_map<std::string, Envelope> envelopes; // Stores all envelopes
 	std::unordered_map<int, Transaction> transactions; // Stores all transactions
@@ -67,6 +77,8 @@ private:
 
 	std::string toLowerCase(const std::string& input);
 
-	void DebugPrint(const std::string& message);
+	std::chrono::system_clock::time_point parseDateString(const std::string& dateStr);
+
+	
 };
 

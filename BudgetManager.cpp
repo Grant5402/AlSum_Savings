@@ -4,7 +4,7 @@ BudgetManager::BudgetManager(const std::string& filename)
 {
 	std::cout << "here" << std::endl;
 	this->loadEnvelopes("envelopeData.csv");
-	this->loadTransactions(filename+"transactionData.csv");
+	this->loadTransactions("transactionData.csv");
 }
 
 std::string BudgetManager::toLowerCase(const std::string& input) {
@@ -35,7 +35,9 @@ void BudgetManager::addEnvelope(const std::string& name, double initialBalance, 
 }
 
 void BudgetManager::removeEnvelope(const std::string& name) {
-	if (envelopes.erase(BudgetManager::toLowerCase(name))) {
+	std::string lowerName = toLowerCase(name);
+	if (envelopes.erase(lowerName)) {
+		removeTransactionsForEnvelope(lowerName); // Delete related transactions
 		std::cout << "Envelope, " << name.c_str() << ", deleted successfully.\n";
 	}
 	else {
@@ -43,8 +45,12 @@ void BudgetManager::removeEnvelope(const std::string& name) {
 	}
 }
 
-Envelope BudgetManager::getEnvelope(const std::string& name) {
-	return envelopes[BudgetManager::toLowerCase(name)];
+Envelope& BudgetManager::getEnvelope(const std::string& name) {
+	auto it = envelopes.find(toLowerCase(name));
+	if (it == envelopes.end()) {
+		throw std::runtime_error("Envelope not found: " + name);
+	}
+	return it->second;
 }
 
 std::unordered_map<std::string, Envelope> BudgetManager::getAllEnvelopes()
@@ -87,7 +93,7 @@ void BudgetManager::loadEnvelopes(const std::string& filename) {
 
 
 void BudgetManager::addTransaction(const std::string& desc, TransactionType t, double amt,
-	const std::string& env, const std::chrono::system_clock::time_point& date) {
+	const std::string& env, const std::string& date) {
 
 	if (t == TransactionType::INCOME) {
 		getEnvelope(env).addFunds(amt);
@@ -97,15 +103,30 @@ void BudgetManager::addTransaction(const std::string& desc, TransactionType t, d
 		getEnvelope(env).deductFunds(amt);
 	}
 
-	transactions[transactionCounter] = Transaction(transactionCounter,desc, t, amt, env, date);
-	envelopeIndexTransactions.emplace(BudgetManager::toLowerCase(env), transactionCounter);
+	transactions[transactionCounter] = Transaction(transactionCounter,desc, t, amt, env, parseDateString(date));
+	
+	if (envelopeIndexTransactions.find(BudgetManager::toLowerCase(env)) == envelopeIndexTransactions.end())
+	{
+		std::vector<int> transactionID;
+
+		transactionID.push_back(transactionCounter);
+
+		envelopeIndexTransactions[BudgetManager::toLowerCase(env)] = transactionID;
+	}
+	else
+	{
+		envelopeIndexTransactions[BudgetManager::toLowerCase(env)].push_back(transactionCounter);
+	}
+
 	envelopeIndexDate.emplace(transactions[transactionCounter].getDateAsString(), transactionCounter);
 
 	transactionCounter++;
+
+	saveTransactions("transactionData.csv");
 }
 
 void BudgetManager::addTransaction(const std::string& desc, TransactionType t, double amt, 
-	const std::string& env, const std::chrono::system_clock::time_point& date,std::string source) {
+	const std::string& env, const std::string& date,std::string source) {
 
 	if (t == TransactionType::INCOME) {
 		getEnvelope(env).addFunds(amt);
@@ -115,23 +136,105 @@ void BudgetManager::addTransaction(const std::string& desc, TransactionType t, d
 		getEnvelope(env).deductFunds(amt);
 	}
 
-	transactions[transactionCounter] = Transaction(transactionCounter, desc, t, amt, env, date, source);
-	envelopeIndexTransactions.emplace(BudgetManager::toLowerCase(env), transactionCounter);
+	transactions[transactionCounter] = Transaction(transactionCounter, desc, t, amt, env, parseDateString(date), source);
+	
+	if (envelopeIndexTransactions.find(BudgetManager::toLowerCase(env)) == envelopeIndexTransactions.end())
+	{
+		std::vector<int> transactionID;
+
+		transactionID.push_back(transactionCounter);
+
+		envelopeIndexTransactions[BudgetManager::toLowerCase(env)] = transactionID;
+	}
+	else
+	{
+		envelopeIndexTransactions[BudgetManager::toLowerCase(env)].push_back(transactionCounter);
+	}
+
 	envelopeIndexDate.emplace(transactions[transactionCounter].getDateAsString(), transactionCounter);
 
 	transactionCounter++; 
+
+	saveTransactions("transactionData.csv");
 }
 
 std::vector<Transaction> BudgetManager::getTransactionsForEnvelope(std::string env)
 {
-	std::vector<Transaction> transactions;
+	std::vector<Transaction> envelopeTransactions;  // Renamed local vector for clarity
 
-	for (const auto id : envelopeIndexTransactions[BudgetManager::toLowerCase(env)])
-	{
-		transactions.push_back(transactions[id]);
+	// Debug: Print all envelopes in the index
+	for (const auto& pair : envelopeIndexTransactions) {
+		DebugPrint("Envelope in envelopeIndexTransactions: " +
+			pair.first + ", " + std::to_string(pair.second.size()) + "\n");
 	}
-	
-	return std::vector<Transaction>();
+
+	// Debug: Print the target envelope name
+	std::string lowerEnv = BudgetManager::toLowerCase(env);
+	DebugPrint("HERE: " + lowerEnv + "\n");
+
+	// Access transactions for the given envelope
+	auto it = envelopeIndexTransactions.find(lowerEnv);
+	//DebugPrint("Total Transactions: " + std::to_string(it->second.size()) + "\n");
+	if (it != envelopeIndexTransactions.end()) {
+		for (const auto id : it->second) {
+			//DebugPrint("HERE:1 - Transaction ID: " + std::to_string(id) + "\n");
+
+			// Access the member map transactions
+			if (transactions.find(id) != transactions.end()) {
+				envelopeTransactions.push_back(transactions[id]);
+			}
+			else {
+				DebugPrint("Transaction ID not found: " + std::to_string(id) + "\n");
+			}
+		}
+	}
+	else {
+		DebugPrint("Envelope not found in index: " + lowerEnv + "\n");
+	}
+
+	DebugPrint("Total Transactions Found: " + std::to_string(envelopeTransactions.size()) + "\n");
+	return envelopeTransactions;
+}
+
+void BudgetManager::removeTransaction(int transactionId) {
+	auto it = transactions.find(transactionId);
+	if (it != transactions.end()) {
+		// Retrieve the transaction details
+		Transaction transaction = it->second;
+		std::string envelopeName = toLowerCase(transaction.getEnvelope());
+
+		// Adjust envelope balance based on transaction type
+		if (envelopes.find(envelopeName) != envelopes.end()) {
+			if (transaction.getType() == EXPENSE) {
+				envelopes[envelopeName].addFunds(transaction.getAmount()); 
+			}
+			else if (transaction.getType() == INCOME) {
+				envelopes[envelopeName].deductFunds(transaction.getAmount()); 
+			}
+		}
+
+		// Remove transaction from envelope index
+		auto& transactionList = envelopeIndexTransactions[envelopeName];
+		transactionList.erase(std::remove(transactionList.begin(), transactionList.end(), transactionId), transactionList.end());
+
+		// Remove the transaction itself
+		transactions.erase(it);
+		DebugPrint("Transaction " + std::to_string(transactionId) + " deleted and balance updated.\n");
+	}
+	else {
+		throw std::runtime_error("Transaction ID not found.");
+	}
+}
+
+
+void BudgetManager::removeTransactionsForEnvelope(const std::string& envelopeName) {
+	auto it = envelopeIndexTransactions.find(toLowerCase(envelopeName));
+	if (it != envelopeIndexTransactions.end()) {
+		for (int id : it->second) {
+			transactions.erase(id); // Delete the transaction
+		}
+		envelopeIndexTransactions.erase(it); // Remove index entry
+	}
 }
 
 void BudgetManager::transferTransaction(int id, std::string& env)
@@ -166,21 +269,68 @@ void BudgetManager::loadTransactions(const std::string& filename) {
 		getline(ss, envName, ',');
 		getline(ss, dateStr, ','); 
 		getline(ss, source, ','); 
-
+		
 		TransactionType type = static_cast<TransactionType>(std::stoi(typeStr)); 
+		
 		double amount = std::stod(amountStr);
-		auto date = Transaction::parseDate(dateStr); 
+		auto date = std::chrono::system_clock::now();
+		DebugPrint("here\n");
 		auto id = std::stoi(idStr); 
-		 
 		transactions[id] = Transaction(id, desc, type, amount, envName, date, source);  
 		transactionCounter = transactionCounter > id + 1 ? transactionCounter : id + 1;
 
-		envelopeIndexTransactions.emplace(BudgetManager::toLowerCase(envName), id);
-		envelopeIndexDate.emplace(transactions[id].getDateAsString(), id);
+		if (envelopeIndexTransactions.find(BudgetManager::toLowerCase(envName)) == envelopeIndexTransactions.end())
+		{
+			std::vector<int> transactionID;
+
+			transactionID.push_back(id);
+
+			envelopeIndexTransactions[BudgetManager::toLowerCase(envName)] = transactionID;
+		}
+		else
+		{
+			envelopeIndexTransactions[BudgetManager::toLowerCase(envName)].push_back(id);
+		}
+
+		if (envelopeIndexDate.find(transactions[id].getDateAsString()) != envelopeIndexDate.end())
+		{
+			std::vector<int> transactionID;
+
+			transactionID.push_back(id);
+
+			envelopeIndexDate.emplace(transactions[id].getDateAsString(), transactionID);
+		}
+		else
+		{
+			// Add later
+		}
 	}
+
+	DebugPrint("Number of transactions loaded: " + std::to_string(transactions.size()) +"\n");
+
 	file.close(); 
 }
 
 void BudgetManager::DebugPrint(const std::string& message) {
 	OutputDebugStringA(message.c_str()); // Use A for ANSI strings
+}
+
+std::chrono::system_clock::time_point BudgetManager::parseDateString(const std::string& dateStr) {
+	std::tm tm = {};
+	std::istringstream ss(dateStr);
+
+	// Parse the string into the tm structure
+	ss >> std::get_time(&tm, "%Y-%m-%d");
+	if (ss.fail()) {
+		throw std::runtime_error("Failed to parse date: " + dateStr);
+	}
+
+	// Convert tm to time_t (seconds since epoch)
+	std::time_t time = std::mktime(&tm);
+	if (time == -1) {
+		throw std::runtime_error("Failed to convert date to time_t: " + dateStr);
+	}
+
+	// Convert time_t to system_clock::time_point
+	return std::chrono::system_clock::from_time_t(time);
 }

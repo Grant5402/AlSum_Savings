@@ -5,6 +5,7 @@
 #include <wx/datectrl.h>
 #include "BudgetManager.h"
 #include "BudgetItemDialog.h"
+#include "TransactionDialog.h"
 
 class MainFrame : public wxFrame
 {
@@ -15,6 +16,9 @@ public:
 
 private:
     BudgetManager* budgetManager;
+    double netGoals;
+    double netSpent;
+    std::vector<int> transactionRowToId;
 
     // Tabs
     wxNotebook* notebook;
@@ -23,7 +27,7 @@ private:
     wxPanel* homePanel;
     wxGrid* envelopeGrid;
     wxStaticText* netGoalsText;
-    wxStaticText* netBalancesText;
+    wxStaticText* netSpentText;
     wxStaticText* netDifferenceText;
 
     // Tab 2 - Specific Envelope
@@ -31,7 +35,11 @@ private:
     wxChoice* envelopeDropdown;
     wxGrid* transactionGridEnvelope;
     wxStaticText* envelopeGoalText;
-    wxStaticText* envelopeBalanceText;
+    wxStaticText* envelopeSpentText;
+    wxStaticText* envelopeDifferenceText;
+    wxButton* addTransactionButton;
+    wxButton* deleteEnvelopeButton;
+    wxButton* deleteTransactionButton;
 
     // Tab 3 - All Transactions
     wxPanel* transactionsPanel;
@@ -44,10 +52,16 @@ private:
     void populateSpecificEnvelopeTab();
     void populateAllTransactionsTab();
 
+    void updateSpecificEnvelopeTab();
+
     void onAddBudgetItem(wxCommandEvent& evnt);
     void onDeleteEnvelope(wxCommandEvent& event);
+    void onAddTransaction(wxCommandEvent& event);
+    void onDeleteEnvelopeButton(wxCommandEvent& event);
+    void onDeleteTransaction(wxCommandEvent& event);
 
     void onEnvelopeSelection(wxCommandEvent& evnt);
+    void onTransactionGridSelection(wxGridEvent& event);
 
     void OnResize(wxSizeEvent& evnt);
     void AdjustColumWidths(wxGrid* grid);

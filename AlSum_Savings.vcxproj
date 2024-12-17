@@ -25,9 +25,11 @@
     <ClInclude Include="Envelope.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Transaction.h" />
+    <ClInclude Include="TransactionDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="TransactionDialog.cpp" />
     <Text Include="BackUp.txt" />
     <ClCompile Include="BudgetItemDialog.cpp" />
     <ClCompile Include="BudgetManager.cpp" />
