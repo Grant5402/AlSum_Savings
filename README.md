@@ -38,11 +38,4 @@ To run the project, ensure you have the following dependencies installed:
 - **CMake** (optional): For project builds
 - **Standard C++17 or higher**
 
----
 
-## **Installation Instructions**
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/BudgetManager.git
-   cd BudgetManager
